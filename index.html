@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image-based Nutritionist Chatbot</title>
+</head>
+<body>
+    <h1>Upload Image of Your Meal</h1>
+    <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
+        <input type="file" name="file" id="file">
+        <button type="submit">Upload</button>
+    </form>
+
+    <div id="results">
+        <!-- Results will be displayed here -->
+    </div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            var form = event.target;
+            var formData = new FormData(form);
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                var resultsDiv = document.getElementById('results');
+                resultsDiv.innerHTML = '';
+
+                // Display detected foods
+                var foodsDetected = document.createElement('p');
+                foodsDetected.textContent = 'Detected Foods: ' + data.foods_detected.join(', ');
+                resultsDiv.appendChild(foodsDetected);
+
+                // Display nutrition data
+                var nutritionList = document.createElement('ul');
+                data.nutrition_data.forEach(item => {
+                    var listItem = document.createElement('li');
+                    listItem.textContent = `${item.name}: Calories - ${item.calories}, Fat - ${item.fat}g`;
+                    nutritionList.appendChild(listItem);
+                });
+                resultsDiv.appendChild(nutritionList);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                var resultsDiv = document.getElementById('results');
+                resultsDiv.innerHTML = '<p>Error fetching data. Please try again.</p>';
+            });
+        });
+    </script>
+</body>
+</html>
+
